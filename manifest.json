@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "TnC Summarizer",
+  "description": "An extension that summarizes the terms and conditions in 10 bullet points for you before you signup on any new websites",
+  "version": "1.0",
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": "logo.png"
+  },
+  "permissions": ["activeTab", "scripting", "storage"],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
