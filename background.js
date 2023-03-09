@@ -14,5 +14,9 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       sendResponse(data.OPENAI_API_KEY);
     });
     return true; // Make the message response asynchronous
+  } else if (request.action == "SUMMARY") {
+    console.log(request.summary, "data");
+    console.log(request.textContent, "textContent");
+    console.log(request.bulletPoints, "bulletPpoints");
   }
 });

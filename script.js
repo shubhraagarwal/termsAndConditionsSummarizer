@@ -41,7 +41,7 @@ const generateSummary = async () => {
     let tempElement = document.createElement("div");
     tempElement.innerHTML = body;
 
-    // Remove header and footer elements from the new element
+    // Cleaning the input by remove unnecessary elements and data
     let headerElements = tempElement.querySelectorAll("header");
     headerElements.forEach(function (element) {
       element.remove();
@@ -55,20 +55,37 @@ const generateSummary = async () => {
     scriptElements.forEach(function (element) {
       element.remove();
     });
+    let styleElements = tempElement.querySelectorAll("style");
+    styleElements.forEach(function (element) {
+      element.remove();
+    });
+    let navElements = tempElement.querySelectorAll("nav");
+    navElements.forEach(function (element) {
+      element.remove();
+    });
+    let iframeElements = tempElement.querySelectorAll("iframe");
+    iframeElements.forEach(function (element) {
+      element.remove();
+    });
+    let imgElements = tempElement.querySelectorAll("img");
+    imgElements.forEach(function (element) {
+      element.remove();
+    });
 
     // Extract the text content from the new element
     let textContent = tempElement.textContent;
+
+    textContent = textContent.replace(/[\r\n]+/gm, "");
 
     fetch("https://api.openai.com/v1/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization:
-          "Bearer " + "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",
+        Authorization: "Bearer " + "",
       },
       body: JSON.stringify({
         model: "text-davinci-003",
-        prompt: `Summarize the following terms and conditions in 5-10 bullet points in an easy to understand language without all the legal jargon. \n ${textContent}`,
+        prompt: `Summarize the following terms and conditions in no more than 10 points in an easy to understand language and enclose every point with <li> tag. \n ${textContent}`,
         temperature: 0.7,
         max_tokens: 256,
         top_p: 1,
@@ -77,7 +94,35 @@ const generateSummary = async () => {
       }),
     })
       .then(response => response.json())
-      .then(data => alert("data", data.choices))
+      .then(data => {
+        chrome.runtime.sendMessage({
+          action: "SUMMARY",
+          summary: data,
+          textContent,
+          bulletPoints: body,
+        });
+        // let [tab] = await chrome.tabs.query({
+        //   active: true,
+        //   currentWindow: true,
+        // });
+
+        // chrome.scripting.executeScript({
+        //   target: { tabId: tab.id },
+        //   function: () => {
+        //     document.getElementById("bulletPoints").innerHTML =
+        //       data.choices[0].text;
+        //   },
+        // });
+        const newUl = document.createElement("ul");
+        newUl.id = "bulletPoints";
+        newUl.innerHTML = data.choices[0].text;
+        const wrapper = document.createElement("div");
+        wrapper.appendChild(newUl);
+
+        wrapper.style =
+          "position: fixed, top: 0, left: 0, width: 100%, height: 100%, background-color: red, z-index: 99999999999999";
+        document.body.appendChild(wrapper);
+      })
       .catch(error => alert(error, "error"));
 
     // let api_key = await chrome.runtime.sendMessage({ action: "get_api_key" }, function (api_key) {
